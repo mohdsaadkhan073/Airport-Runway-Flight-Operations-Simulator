@@ -22,6 +22,10 @@ export const simulationService = {
     return request<SimulationState>(`/simulation/step?steps=${steps}`, { method: 'POST' });
   },
 
+  async rewind(steps: number = 1): Promise<SimulationState> {
+    return request<SimulationState>(`/simulation/rewind?steps=${steps}`, { method: 'POST' });
+  },
+
   async reset(): Promise<SimulationState> {
     return request<SimulationState>('/simulation/reset', { method: 'POST' });
   },

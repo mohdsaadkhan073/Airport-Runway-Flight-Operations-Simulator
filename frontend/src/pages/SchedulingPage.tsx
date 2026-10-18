@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Play, BarChart2, Layers, Info, CheckCircle2 } from 'lucide-react';
+import { Clock, Play, BarChart2, Layers, Info, CheckCircle2, ShieldAlert } from 'lucide-react';
 import {
   SchedulingResult,
   SchedulingComparisonResponse,
@@ -13,7 +13,6 @@ interface SchedulingPageProps {
 
 export const SchedulingPage: React.FC<SchedulingPageProps> = ({ onShowToast }) => {
   const [selectedAlgo, setSelectedAlgo] = useState<string>('FCFS');
-  const [timeQuantum, setTimeQuantum] = useState<number>(3);
   const [result, setResult] = useState<SchedulingResult | null>(null);
   const [comparison, setComparison] = useState<SchedulingComparisonResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -23,7 +22,6 @@ export const SchedulingPage: React.FC<SchedulingPageProps> = ({ onShowToast }) =
       setIsLoading(true);
       const res = await schedulingService.runScheduling({
         algorithm: algo,
-        time_quantum: timeQuantum,
       });
       setResult(res);
       setComparison(null);
@@ -47,12 +45,11 @@ export const SchedulingPage: React.FC<SchedulingPageProps> = ({ onShowToast }) =
       setIsLoading(true);
       const res = await schedulingService.compareScheduling({
         algorithm: 'ALL',
-        time_quantum: timeQuantum,
       });
       setComparison(res);
       const activeResult = res.results.find((r) => r.algorithm.toUpperCase().includes(selectedAlgo.toUpperCase())) || res.results[0];
       setResult(activeResult);
-      onShowToast('Compared FCFS, Priority, and Round Robin algorithms', 'success');
+      onShowToast('Compared FCFS, Priority, and Shortest Job First (SJF) algorithms', 'success');
     } catch (err: any) {
       onShowToast(err.message || 'Failed to compare algorithms', 'error');
     } finally {
@@ -69,8 +66,16 @@ export const SchedulingPage: React.FC<SchedulingPageProps> = ({ onShowToast }) =
             Scheduling Laboratory
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Simulate and benchmark FCFS, Priority Scheduling, and Round Robin algorithms with real workload calculations.
+            Simulate and benchmark non-preemptive runway scheduling algorithms with calculated waiting time and throughput metrics.
           </p>
+        </div>
+      </div>
+
+      <div className="bg-amber-950/30 border border-amber-800/50 rounded-xl p-4 flex items-start gap-3">
+        <ShieldAlert className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+        <div className="text-xs text-slate-300 leading-relaxed">
+          <strong className="text-amber-300 block font-semibold mb-0.5">Physical Safety Protocol: Preemption Prohibited</strong>
+          Once an aircraft begins touchdown or takeoff roll on a runway, preemption is strictly prohibited by aerodynamic safety. All scheduling algorithms operate non-preemptively until the active flight completes its operation and vacates the runway.
         </div>
       </div>
 
@@ -78,34 +83,17 @@ export const SchedulingPage: React.FC<SchedulingPageProps> = ({ onShowToast }) =
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">Select Algorithm</label>
+              <label className="block text-xs font-medium text-slate-400 mb-1">Select Non-Preemptive Algorithm</label>
               <select
                 value={selectedAlgo}
                 onChange={(e) => setSelectedAlgo(e.target.value)}
-                className="bg-slate-950 border border-slate-700 text-slate-100 text-xs rounded-lg px-3 py-2 outline-none focus:border-sky-500 font-medium"
+                className="bg-slate-950 border border-slate-700 text-slate-100 text-xs rounded-lg px-3 py-2 outline-none focus:border-sky-500 font-medium cursor-pointer"
               >
                 <option value="FCFS">First-Come, First-Served (FCFS)</option>
-                <option value="PRIORITY">Priority Scheduling (Non-Preemptive)</option>
-                <option value="ROUND_ROBIN">Round Robin (CPU Time Quantum Analogy)</option>
+                <option value="PRIORITY">Priority Scheduling (Emergency & Weight)</option>
+                <option value="SJF">Shortest Job First (SJF / Shortest Runway Hold)</option>
               </select>
             </div>
-
-            {selectedAlgo === 'ROUND_ROBIN' && (
-              <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Time Quantum (q)</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min="1"
-                    max="20"
-                    value={timeQuantum}
-                    onChange={(e) => setTimeQuantum(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-20 bg-slate-950 border border-slate-700 text-slate-100 text-xs rounded-lg px-3 py-2 outline-none focus:border-sky-500 font-mono"
-                  />
-                  <span className="text-xs text-slate-400">ticks</span>
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="flex items-center gap-3">
@@ -121,7 +109,7 @@ export const SchedulingPage: React.FC<SchedulingPageProps> = ({ onShowToast }) =
               disabled={isLoading}
               className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold transition-colors"
             >
-              <BarChart2 className="w-4 h-4 text-sky-400" /> Compare All (FCFS, Priority, RR)
+              <BarChart2 className="w-4 h-4 text-sky-400" /> Compare All (FCFS, Priority, SJF)
             </button>
           </div>
         </div>
@@ -131,7 +119,7 @@ export const SchedulingPage: React.FC<SchedulingPageProps> = ({ onShowToast }) =
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
           <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
             <Layers className="w-4 h-4 text-sky-400" />
-            Algorithm Benchmark Comparison ({comparison.workload_count} Flights Workload)
+            Non-Preemptive Benchmark Comparison ({comparison.workload_count} Flights Workload)
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {comparison.results.map((res) => {
@@ -253,25 +241,25 @@ export const SchedulingPage: React.FC<SchedulingPageProps> = ({ onShowToast }) =
       <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-sm space-y-3">
         <h4 className="text-sm font-bold text-slate-100 flex items-center gap-2">
           <Info className="w-4 h-4 text-sky-400" />
-          Algorithm Characteristics & Performance Factors
+          Non-Preemptive Scheduling Characteristics
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
           <div className="p-3 bg-slate-950/60 border border-slate-800 rounded-lg space-y-1">
             <strong className="text-sky-300 block">FCFS (Convoy Effect)</strong>
             <p className="text-slate-400 leading-relaxed">
-              If a long runway hold / burst job arrives early, subsequent shorter operations experience high waiting times, known as the Convoy Effect.
+              If a long runway hold or heavy aircraft arrives first, subsequent short operations wait in queue, resulting in high average waiting times.
             </p>
           </div>
           <div className="p-3 bg-slate-950/60 border border-slate-800 rounded-lg space-y-1">
-            <strong className="text-amber-300 block">Priority & Starvation</strong>
+            <strong className="text-amber-300 block">Priority Scheduling</strong>
             <p className="text-slate-400 leading-relaxed">
-              Emergency requests take immediate front position in the ready queue. Low priority flights risk starvation without aging mechanisms.
+              Emergency requests jump immediately to the head of the queue. Routine flights are ordered by priority score to clear vital traffic first.
             </p>
           </div>
           <div className="p-3 bg-slate-950/60 border border-slate-800 rounded-lg space-y-1">
-            <strong className="text-emerald-300 block">Round Robin (Quantum q)</strong>
+            <strong className="text-emerald-300 block">SJF (Optimal AWT)</strong>
             <p className="text-slate-400 leading-relaxed">
-              Time slicing improves responsiveness for time-sharing systems. Small quantum increases context switches; large quantum degrades to FCFS.
+              Shortest Job First provably minimizes Average Waiting Time among all non-preemptive algorithms by scheduling fastest-clearing flights first.
             </p>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, StepForward, RotateCcw, Database, Plane } from 'lucide-react';
+import { Play, Pause, StepForward, StepBack, RotateCcw, Database, Plane } from 'lucide-react';
 import { SimulationState } from '../types/simulation';
 
 interface HeaderProps {
@@ -7,6 +7,7 @@ interface HeaderProps {
   onPlay: () => void;
   onPause: () => void;
   onStep: () => void;
+  onRewind: () => void;
   onReset: () => void;
   onLoadSampleData: () => void;
   onSpeedChange: (speed: number) => void;
@@ -17,6 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   onPlay,
   onPause,
   onStep,
+  onRewind,
   onReset,
   onLoadSampleData,
   onSpeedChange,
@@ -77,6 +79,19 @@ export const Header: React.FC<HeaderProps> = ({
               title="Step forward 1 simulation tick"
             >
               <StepForward className="w-3.5 h-3.5" /> Step
+            </button>
+
+            <button
+              onClick={onRewind}
+              disabled={currentTime === 0 || isRunning}
+              className={`flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded transition-colors ${
+                currentTime === 0 || isRunning
+                  ? 'opacity-40 cursor-not-allowed text-slate-500'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
+              }`}
+              title="Rewind / Step backward 1 simulation tick"
+            >
+              <StepBack className="w-3.5 h-3.5" /> Rewind
             </button>
 
             <button

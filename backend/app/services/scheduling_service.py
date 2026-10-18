@@ -8,7 +8,7 @@ from app.schemas.scheduling import (
 )
 from app.algorithms.fcfs import calculate_fcfs
 from app.algorithms.priority import calculate_priority
-from app.algorithms.round_robin import calculate_round_robin
+from app.algorithms.sjf import calculate_sjf
 from app.services.log_service import create_log
 
 _last_scheduling_results: Dict[str, SchedulingResult] = {}
@@ -67,12 +67,12 @@ def run_scheduling(
         result = calculate_fcfs(workload)
     elif algo_upper in ["PRIORITY", "PRIORITY SCHEDULING"]:
         result = calculate_priority(workload)
-    elif algo_upper in ["ROUND_ROBIN", "ROUND ROBIN", "RR"]:
-        result = calculate_round_robin(workload, time_quantum)
+    elif algo_upper in ["SJF", "SHORTEST JOB FIRST"]:
+        result = calculate_sjf(workload)
     else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Unknown scheduling algorithm '{algorithm}'. Use FCFS, PRIORITY, or ROUND_ROBIN."
+            detail=f"Unknown scheduling algorithm '{algorithm}'. Use FCFS, PRIORITY, or SJF."
         )
 
     _last_scheduling_results[algo_upper] = result
@@ -113,19 +113,19 @@ def compare_scheduling(
 
     fcfs_res = calculate_fcfs(workload)
     priority_res = calculate_priority(workload)
-    rr_res = calculate_round_robin(workload, time_quantum)
+    sjf_res = calculate_sjf(workload)
 
     _last_scheduling_results["FCFS"] = fcfs_res
     _last_scheduling_results["PRIORITY"] = priority_res
-    _last_scheduling_results["ROUND_ROBIN"] = rr_res
+    _last_scheduling_results["SJF"] = sjf_res
 
     create_log(
         db=db,
         event_type="SCHEDULING_COMPARE",
-        description=f"Compared FCFS, Priority, and Round Robin across {len(workload)} flights."
+        description=f"Compared FCFS, Priority, and SJF across {len(workload)} flights."
     )
 
     return SchedulingComparisonResponse(
         workload_count=len(workload),
-        results=[fcfs_res, priority_res, rr_res]
+        results=[fcfs_res, priority_res, sjf_res]
     )

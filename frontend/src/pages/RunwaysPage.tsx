@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Route, Plus, AlertCircle, CheckCircle, Wrench, X } from 'lucide-react';
-import { Runway, RunwayCreatePayload, RunwayStatus } from '../types/runway';
+import { Route, Plus, Wrench, X, Edit2 } from 'lucide-react';
+import { Runway, RunwayCreatePayload, RunwayStatus, RunwayUpdatePayload } from '../types/runway';
 import { runwayService } from '../services/runwayService';
 import { StatusBadge } from '../components/StatusBadge';
 
@@ -12,7 +12,14 @@ export const RunwaysPage: React.FC<RunwaysPageProps> = ({ onShowToast }) => {
   const [runways, setRunways] = useState<Runway[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [editingRunway, setEditingRunway] = useState<Runway | null>(null);
+
   const [formData, setFormData] = useState<RunwayCreatePayload>({
+    name: '',
+    supported_operations: 'ALL',
+  });
+
+  const [editFormData, setEditFormData] = useState<RunwayUpdatePayload>({
     name: '',
     supported_operations: 'ALL',
   });
@@ -43,6 +50,37 @@ export const RunwaysPage: React.FC<RunwaysPageProps> = ({ onShowToast }) => {
       fetchRunways();
     } catch (err: any) {
       onShowToast(err.message || 'Failed to create runway', 'error');
+    }
+  };
+
+  const handleOpenEdit = (runway: Runway) => {
+    setEditingRunway(runway);
+    setEditFormData({
+      name: runway.name,
+      supported_operations: runway.supported_operations,
+    });
+  };
+
+  const handleUpdateRunway = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingRunway) return;
+    try {
+      await runwayService.updateRunway(editingRunway.id, editFormData);
+      onShowToast(`Runway ${editFormData.name || editingRunway.name} updated successfully`, 'success');
+      setEditingRunway(null);
+      fetchRunways();
+    } catch (err: any) {
+      onShowToast(err.message || 'Failed to update runway', 'error');
+    }
+  };
+
+  const handleUpdateOperationMode = async (runway: Runway, newMode: string) => {
+    try {
+      await runwayService.updateRunway(runway.id, { supported_operations: newMode });
+      onShowToast(`Runway ${runway.name} mode changed to ${newMode}`, 'success');
+      fetchRunways();
+    } catch (err: any) {
+      onShowToast(err.message || 'Failed to update runway mode', 'error');
     }
   };
 
@@ -109,14 +147,33 @@ export const RunwaysPage: React.FC<RunwaysPageProps> = ({ onShowToast }) => {
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="text-base font-bold text-slate-100">{runway.name}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-base font-bold text-slate-100">{runway.name}</span>
+                      <button
+                        onClick={() => handleOpenEdit(runway)}
+                        className="p-1 text-slate-400 hover:text-sky-400 rounded transition-colors"
+                        title="Edit runway properties"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                     <StatusBadge status={runway.status} />
                   </div>
 
-                  <div className="mt-4 space-y-2 text-xs">
-                    <div className="flex justify-between text-slate-400">
+                  <div className="mt-4 space-y-3 text-xs">
+                    <div className="flex justify-between items-center text-slate-400">
                       <span>Supported Ops:</span>
-                      <span className="font-semibold text-slate-200">{runway.supported_operations}</span>
+                      <select
+                        value={runway.supported_operations}
+                        onChange={(e) => handleUpdateOperationMode(runway, e.target.value)}
+                        disabled={isOccupied}
+                        className="bg-slate-950 border border-slate-700 text-sky-400 font-semibold text-xs rounded px-2 py-1 outline-none focus:border-sky-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={isOccupied ? 'Cannot change operation mode while occupied' : 'Select supported operations'}
+                      >
+                        <option value="ALL">ALL (Takeoff & Landing)</option>
+                        <option value="LANDING_ONLY">LANDING ONLY</option>
+                        <option value="TAKEOFF_ONLY">TAKEOFF ONLY</option>
+                      </select>
                     </div>
 
                     <div className="flex justify-between text-slate-400">
@@ -160,7 +217,7 @@ export const RunwaysPage: React.FC<RunwaysPageProps> = ({ onShowToast }) => {
                         ? 'bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-700'
                         : 'bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-700'
                     }`}
-                    title={isOccupied ? 'Cannot toggle maintenance while runway is occupied' : 'Toggle Runway Mode'}
+                    title={isOccupied ? 'Cannot toggle maintenance while runway is occupied' : 'Toggle Runway Status'}
                   >
                     <Wrench className="w-3.5 h-3.5" />
                     {isUnavailable ? 'Set Available' : 'Take Offline'}
@@ -206,8 +263,8 @@ export const RunwaysPage: React.FC<RunwaysPageProps> = ({ onShowToast }) => {
                   className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 outline-none focus:border-sky-500"
                 >
                   <option value="ALL">ALL (Takeoff & Landing)</option>
-                  <option value="TAKEOFF">Takeoff Only</option>
-                  <option value="LANDING">Landing Only</option>
+                  <option value="LANDING_ONLY">Landing Only</option>
+                  <option value="TAKEOFF_ONLY">Takeoff Only</option>
                 </select>
               </div>
 
@@ -224,6 +281,64 @@ export const RunwaysPage: React.FC<RunwaysPageProps> = ({ onShowToast }) => {
                   className="px-4 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors shadow"
                 >
                   Add Runway
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {editingRunway && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-sm w-full p-6 text-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <h3 className="text-base font-bold text-slate-100">Edit Runway</h3>
+              <button
+                onClick={() => setEditingRunway(null)}
+                className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-slate-200"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateRunway} className="mt-4 space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Runway Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 outline-none focus:border-sky-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Supported Operations</label>
+                <select
+                  value={editFormData.supported_operations}
+                  onChange={(e) => setEditFormData({ ...editFormData, supported_operations: e.target.value })}
+                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 outline-none focus:border-sky-500"
+                >
+                  <option value="ALL">ALL (Takeoff & Landing)</option>
+                  <option value="LANDING_ONLY">Landing Only</option>
+                  <option value="TAKEOFF_ONLY">Takeoff Only</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3">
+                <button
+                  type="button"
+                  onClick={() => setEditingRunway(null)}
+                  className="px-4 py-2 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors border border-slate-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors shadow"
+                >
+                  Save Changes
                 </button>
               </div>
             </form>

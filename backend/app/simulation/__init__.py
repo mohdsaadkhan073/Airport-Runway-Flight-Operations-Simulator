@@ -1,6 +1,7 @@
 from app.simulation.engine import (
     get_simulation_state,
     step_simulation,
+    rewind_simulation,
     start_simulation,
     pause_simulation,
     resume_simulation,
@@ -12,6 +13,7 @@ from app.simulation.engine import (
 __all__ = [
     "get_simulation_state",
     "step_simulation",
+    "rewind_simulation",
     "start_simulation",
     "pause_simulation",
     "resume_simulation",

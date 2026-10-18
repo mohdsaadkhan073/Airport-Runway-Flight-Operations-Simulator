@@ -38,6 +38,7 @@ export interface SimulationState {
   waiting_flights_count: number;
   scheduled_flights_count: number;
   completed_flights_count: number;
+  can_rewind?: boolean;
   waiting_queue: WaitingQueueItem[];
 }
 

@@ -27,7 +27,7 @@ def run_scheduling_algorithm(
 
 @router.get("/results", response_model=SchedulingResult)
 def get_scheduling_results(
-    algorithm: Optional[str] = Query(None, description="Algorithm name (FCFS, PRIORITY, ROUND_ROBIN)"),
+    algorithm: Optional[str] = Query(None, description="Algorithm name (FCFS, PRIORITY, SJF)"),
     db: Session = Depends(get_db)
 ):
     return scheduling_service.get_last_results(db=db, algorithm=algorithm)

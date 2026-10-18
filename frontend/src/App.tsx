@@ -103,6 +103,16 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleRewind = async () => {
+    try {
+      const state = await simulationService.rewind(1);
+      setSimulationState(state);
+      refreshAnalytics();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to rewind simulation', 'error');
+    }
+  };
+
   const handleResetConfirm = async () => {
     try {
       const state = await simulationService.reset();
@@ -143,6 +153,7 @@ export const App: React.FC = () => {
         onPlay={handlePlay}
         onPause={handlePause}
         onStep={handleStep}
+        onRewind={handleRewind}
         onReset={() => setIsResetConfirmOpen(true)}
         onLoadSampleData={() => setIsSampleDataConfirmOpen(true)}
         onSpeedChange={handleSpeedChange}

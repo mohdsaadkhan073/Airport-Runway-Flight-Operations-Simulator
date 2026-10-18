@@ -1,11 +1,13 @@
 from typing import Dict, Any, List
 from sqlalchemy.orm import Session
 from app.models.settings import SimulationSettings
-from app.models.flight import Flight, FlightStatus
+from app.models.flight import Flight, FlightStatus, OperationType
 from app.models.runway import Runway, RunwayStatus
 from app.models.operation import FlightOperation
 from app.services.runway_service import init_default_runways
 from app.services.log_service import create_log
+
+_simulation_history: List[Dict[str, Any]] = []
 
 
 def get_or_create_settings(db: Session) -> SimulationSettings:
@@ -47,6 +49,7 @@ def get_simulation_state(db: Session) -> Dict[str, Any]:
         "speed_multiplier": settings.speed_multiplier,
         "default_algorithm": settings.default_algorithm,
         "time_quantum": settings.time_quantum,
+        "can_rewind": len(_simulation_history) > 0 or settings.current_time > 0,
         "runways": [
             {
                 "id": r.id,
@@ -87,7 +90,35 @@ def get_simulation_state(db: Session) -> Dict[str, Any]:
     }
 
 
+def _capture_snapshot(db: Session, current_time: int) -> Dict[str, Any]:
+    flights = db.query(Flight).all()
+    runways = db.query(Runway).all()
+    operations_count = db.query(FlightOperation).count()
+    return {
+        "current_time": current_time,
+        "flights": [
+            {
+                "id": f.id,
+                "status": f.status,
+                "remaining_duration": f.remaining_duration
+            }
+            for f in flights
+        ],
+        "runways": [
+            {
+                "id": r.id,
+                "status": r.status,
+                "current_flight_id": r.current_flight_id,
+                "supported_operations": r.supported_operations
+            }
+            for r in runways
+        ],
+        "operations_count": operations_count
+    }
+
+
 def step_simulation(db: Session, steps: int = 1) -> Dict[str, Any]:
+    global _simulation_history
     settings = get_or_create_settings(db)
     runways = db.query(Runway).all()
     if not runways:
@@ -95,6 +126,10 @@ def step_simulation(db: Session, steps: int = 1) -> Dict[str, Any]:
 
     for _ in range(max(1, steps)):
         sim_time = settings.current_time
+        snapshot = _capture_snapshot(db, sim_time)
+        _simulation_history.append(snapshot)
+        if len(_simulation_history) > 300:
+            _simulation_history.pop(0)
 
         scheduled_to_wait = db.query(Flight).filter(
             Flight.status == FlightStatus.SCHEDULED,
@@ -155,12 +190,33 @@ def step_simulation(db: Session, steps: int = 1) -> Dict[str, Any]:
                 )
                 waiting_flights = waiting_query.all()
 
+                if runway.supported_operations == "LANDING_ONLY":
+                    waiting_flights = [
+                        f for f in waiting_flights
+                        if f.operation_type == OperationType.LANDING or f.is_emergency
+                    ]
+                elif runway.supported_operations == "TAKEOFF_ONLY":
+                    waiting_flights = [
+                        f for f in waiting_flights
+                        if f.operation_type == OperationType.TAKEOFF or f.is_emergency
+                    ]
+
                 if waiting_flights:
-                    if settings.default_algorithm.upper() in ["PRIORITY", "PRIORITY SCHEDULING"]:
+                    algo = settings.default_algorithm.upper()
+                    if algo in ["PRIORITY", "PRIORITY SCHEDULING"]:
                         waiting_flights.sort(
                             key=lambda f: (
                                 0 if f.is_emergency else 1,
                                 f.priority,
+                                f.arrival_time,
+                                f.id
+                            )
+                        )
+                    elif algo in ["SJF", "SHORTEST JOB FIRST"]:
+                        waiting_flights.sort(
+                            key=lambda f: (
+                                0 if f.is_emergency else 1,
+                                f.duration,
                                 f.arrival_time,
                                 f.id
                             )
@@ -195,6 +251,61 @@ def step_simulation(db: Session, steps: int = 1) -> Dict[str, Any]:
     return get_simulation_state(db)
 
 
+def rewind_simulation(db: Session, steps: int = 1) -> Dict[str, Any]:
+    global _simulation_history
+    settings = get_or_create_settings(db)
+    if settings.current_time <= 0:
+        return get_simulation_state(db)
+
+    for _ in range(max(1, steps)):
+        if not _simulation_history:
+            target_time = max(0, settings.current_time - 1)
+            settings.current_time = target_time
+            if target_time == 0:
+                for f in db.query(Flight).all():
+                    f.status = FlightStatus.SCHEDULED if f.arrival_time > 0 else FlightStatus.WAITING
+                    f.remaining_duration = f.duration
+                for r in db.query(Runway).all():
+                    if r.status != RunwayStatus.UNAVAILABLE:
+                        r.status = RunwayStatus.AVAILABLE
+                    r.current_flight_id = None
+                db.query(FlightOperation).delete()
+            db.commit()
+            break
+
+        snapshot = _simulation_history.pop()
+        settings.current_time = snapshot["current_time"]
+
+        flight_map = {item["id"]: item for item in snapshot["flights"]}
+        for f in db.query(Flight).all():
+            if f.id in flight_map:
+                f.status = flight_map[f.id]["status"]
+                f.remaining_duration = flight_map[f.id]["remaining_duration"]
+
+        runway_map = {item["id"]: item for item in snapshot["runways"]}
+        for r in db.query(Runway).all():
+            if r.id in runway_map:
+                r.status = runway_map[r.id]["status"]
+                r.current_flight_id = runway_map[r.id]["current_flight_id"]
+
+        all_ops = db.query(FlightOperation).order_by(FlightOperation.id.desc()).all()
+        excess = len(all_ops) - snapshot.get("operations_count", 0)
+        if excess > 0:
+            for op in all_ops[:excess]:
+                db.delete(op)
+
+        db.commit()
+
+    create_log(
+        db=db,
+        event_type="SIMULATION_REWOUND",
+        simulation_time=settings.current_time,
+        description=f"Simulation rewound to clock tick {settings.current_time}."
+    )
+
+    return get_simulation_state(db)
+
+
 def start_simulation(db: Session) -> Dict[str, Any]:
     settings = get_or_create_settings(db)
     settings.is_running = True
@@ -220,6 +331,9 @@ def resume_simulation(db: Session) -> Dict[str, Any]:
 
 
 def reset_simulation(db: Session) -> Dict[str, Any]:
+    global _simulation_history
+    _simulation_history.clear()
+
     settings = get_or_create_settings(db)
     settings.current_time = 0
     settings.is_running = False
@@ -235,12 +349,16 @@ def reset_simulation(db: Session) -> Dict[str, Any]:
         f.status = FlightStatus.SCHEDULED
         f.remaining_duration = f.duration
 
+    db.query(FlightOperation).delete()
     db.commit()
     create_log(db=db, event_type="SIMULATION_RESET", simulation_time=0, description="Simulation reset to time 0.")
     return get_simulation_state(db)
 
 
 def load_sample_data(db: Session, overwrite: bool = False) -> Dict[str, Any]:
+    global _simulation_history
+    _simulation_history.clear()
+
     if overwrite:
         db.query(FlightOperation).delete()
         db.query(Flight).delete()
@@ -249,8 +367,8 @@ def load_sample_data(db: Session, overwrite: bool = False) -> Dict[str, Any]:
 
     runway_definitions = [
         {"name": "Runway 09L", "status": RunwayStatus.AVAILABLE, "supported_operations": "ALL"},
-        {"name": "Runway 27R", "status": RunwayStatus.AVAILABLE, "supported_operations": "ALL"},
-        {"name": "Runway 14/32", "status": RunwayStatus.UNAVAILABLE, "supported_operations": "ALL"},
+        {"name": "Runway 27R", "status": RunwayStatus.AVAILABLE, "supported_operations": "LANDING_ONLY"},
+        {"name": "Runway 14/32", "status": RunwayStatus.UNAVAILABLE, "supported_operations": "TAKEOFF_ONLY"},
     ]
     for r_def in runway_definitions:
         existing_r = db.query(Runway).filter(Runway.name == r_def["name"]).first()
@@ -293,8 +411,7 @@ def load_sample_data(db: Session, overwrite: bool = False) -> Dict[str, Any]:
     create_log(
         db=db,
         event_type="SAMPLE_DATA_LOADED",
-        description="Standard educational simulation dataset loaded (8 flights, 3 runways including 1 unavailable)."
+        description="Standard educational simulation dataset loaded (8 flights, 3 runways with dedicated operation modes)."
     )
 
     return get_simulation_state(db)
-

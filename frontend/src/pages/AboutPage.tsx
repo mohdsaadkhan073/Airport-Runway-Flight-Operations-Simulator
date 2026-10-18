@@ -70,24 +70,13 @@ export const AboutPage: React.FC<AboutPageProps> = ({
               <select
                 value={settingsForm.default_algorithm}
                 onChange={(e) => setSettingsForm({ ...settingsForm, default_algorithm: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-sky-500"
+                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-sky-500 cursor-pointer"
               >
                 <option value="FCFS">FCFS (First-Come First-Served)</option>
                 <option value="PRIORITY">Priority Scheduling</option>
-                <option value="ROUND_ROBIN">Round Robin</option>
+                <option value="SJF">SJF (Shortest Job First)</option>
               </select>
-            </div>
-
-            <div>
-              <label className="block text-slate-300 font-medium mb-1">Default RR Time Quantum (ticks)</label>
-              <input
-                type="number"
-                min="1"
-                max="20"
-                value={settingsForm.time_quantum}
-                onChange={(e) => setSettingsForm({ ...settingsForm, time_quantum: parseInt(e.target.value) || 1 })}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-sky-500 font-mono"
-              />
+              <span className="text-[11px] text-slate-500 mt-1 block">All algorithms are non-preemptive to preserve runway safety.</span>
             </div>
 
             <button

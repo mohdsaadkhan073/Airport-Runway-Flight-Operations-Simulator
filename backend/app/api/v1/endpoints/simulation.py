@@ -6,6 +6,7 @@ from app.schemas.settings import SimulationSettingsUpdate
 from app.simulation import (
     get_simulation_state,
     step_simulation,
+    rewind_simulation,
     start_simulation,
     pause_simulation,
     resume_simulation,
@@ -46,6 +47,14 @@ def trigger_step(
     return step_simulation(db, steps=steps)
 
 
+@router.post("/rewind")
+def trigger_rewind(
+    steps: int = Query(1, ge=1, le=100),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    return rewind_simulation(db, steps=steps)
+
+
 @router.post("/reset")
 def trigger_reset(db: Session = Depends(get_db)) -> Dict[str, Any]:
     return reset_simulation(db)
@@ -79,4 +88,3 @@ def trigger_load_sample_data(
     db: Session = Depends(get_db)
 ) -> Dict[str, Any]:
     return load_sample_data(db=db, overwrite=overwrite)
-
