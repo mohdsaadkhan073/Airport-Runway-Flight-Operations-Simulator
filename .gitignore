@@ -1,0 +1,25 @@
+Master Plan.md
+
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+venv/
+.venv/
+ENV/
+
+*.sqlite
+*.sqlite3
+*.db
+
+node_modules/
+dist/
+.vite/
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+.env
