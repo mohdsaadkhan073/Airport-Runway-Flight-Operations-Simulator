@@ -68,6 +68,19 @@ export const MemoryPage: React.FC<MemoryPageProps> = ({ onShowToast }) => {
     }
   };
 
+  const handleDefragment = async () => {
+    try {
+      const data = await memoryService.defragment();
+      setMemoryState(data);
+      onShowToast(
+        'Memory compacted: active blocks moved contiguously, external fragmentation eliminated!',
+        'success'
+      );
+    } catch (err: any) {
+      onShowToast(err.message || 'Failed to defragment memory', 'error');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -163,6 +176,7 @@ export const MemoryPage: React.FC<MemoryPageProps> = ({ onShowToast }) => {
               externalFragmentation={memoryState.external_fragmentation}
               blocks={memoryState.blocks}
               onDeallocate={handleDeallocate}
+              onDefragment={handleDefragment}
             />
           )}
 

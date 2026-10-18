@@ -40,3 +40,9 @@ def deallocate_memory_block(
 @router.post("/reset", response_model=MemoryStateResponse)
 def reset_memory_state(db: Session = Depends(get_db)):
     return memory_service.reset_memory(db=db)
+
+
+@router.post("/defragment", response_model=MemoryStateResponse)
+def defragment_memory_pool(db: Session = Depends(get_db)):
+    return memory_service.defragment_memory(db=db)
+

@@ -59,8 +59,8 @@ def get_simulation_state(db: Session) -> Dict[str, Any]:
         waiting_flights = sorted(
             waiting_raw,
             key=lambda f: (
-                0 if f.is_emergency else 1,
                 f.arrival_time,
+                0 if f.is_emergency else 1,
                 f.priority,
                 f.id
             )
@@ -251,8 +251,8 @@ def step_simulation(db: Session, steps: int = 1) -> Dict[str, Any]:
                     else:
                         waiting_flights.sort(
                             key=lambda f: (
-                                0 if f.is_emergency else 1,
                                 f.arrival_time,
+                                0 if f.is_emergency else 1,
                                 f.priority,
                                 f.id
                             )

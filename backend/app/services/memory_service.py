@@ -211,3 +211,37 @@ def reset_memory(db: Session) -> MemoryStateResponse:
     )
 
     return get_memory_state(db)
+
+
+def defragment_memory(db: Session) -> MemoryStateResponse:
+    global _blocks
+    allocated = [b for b in _blocks if b["is_allocated"]]
+    total_allocated = sum(b["size"] for b in allocated)
+    free_size = _TOTAL_MEMORY - total_allocated
+
+    new_blocks = []
+    current_addr = 0
+    for b in allocated:
+        b["start_address"] = current_addr
+        new_blocks.append(b)
+        current_addr += b["size"]
+
+    if free_size > 0:
+        new_blocks.append({
+            "block_id": f"free-{uuid.uuid4().hex[:6]}",
+            "start_address": current_addr,
+            "size": free_size,
+            "is_allocated": False,
+            "process_name": None
+        })
+
+    _blocks = new_blocks
+
+    create_log(
+        db=db,
+        event_type="MEMORY_DEFRAGMENTED",
+        description=f"Compacted memory pool: consolidated {len(allocated)} active blocks, created {free_size} KB contiguous free space."
+    )
+
+    return get_memory_state(db)
+

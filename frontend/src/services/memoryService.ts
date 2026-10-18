@@ -25,4 +25,10 @@ export const memoryService = {
       method: 'POST',
     });
   },
+
+  async defragment(): Promise<MemoryStateResponse> {
+    return request<MemoryStateResponse>('/memory/defragment', {
+      method: 'POST',
+    });
+  },
 };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { MemoryBlock } from '../types/memory';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Minimize2 } from 'lucide-react';
 
 interface MemoryVisualizerProps {
   totalMemory: number;
@@ -9,6 +9,7 @@ interface MemoryVisualizerProps {
   externalFragmentation: number;
   blocks: MemoryBlock[];
   onDeallocate: (blockId: string) => void;
+  onDefragment?: () => void;
 }
 
 export const MemoryVisualizer: React.FC<MemoryVisualizerProps> = ({
@@ -18,6 +19,7 @@ export const MemoryVisualizer: React.FC<MemoryVisualizerProps> = ({
   externalFragmentation,
   blocks,
   onDeallocate,
+  onDefragment,
 }) => {
   return (
     <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-lg space-y-5">
@@ -43,9 +45,28 @@ export const MemoryVisualizer: React.FC<MemoryVisualizerProps> = ({
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
           <h4 className="text-sm font-semibold text-slate-200">Simulated Physical Memory Map (0 - {totalMemory} KB)</h4>
           <div className="flex items-center gap-3 text-xs">
+            {onDefragment && (
+              <button
+                onClick={onDefragment}
+                disabled={externalFragmentation === 0}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold transition-all shadow-sm ${
+                  externalFragmentation > 0
+                    ? 'bg-amber-600 hover:bg-amber-500 text-white animate-pulse'
+                    : 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50'
+                }`}
+                title={
+                  externalFragmentation > 0
+                    ? `Defragment and compact memory (${externalFragmentation} KB scattered across holes)`
+                    : 'No external fragmentation present'
+                }
+              >
+                <Minimize2 className="w-3.5 h-3.5" />
+                Defragment Memory {externalFragmentation > 0 && `(${externalFragmentation} KB)`}
+              </button>
+            )}
             <span className="flex items-center gap-1.5 text-slate-300">
               <span className="w-3 h-3 rounded bg-sky-700 border border-sky-500" /> Allocated
             </span>
@@ -62,7 +83,7 @@ export const MemoryVisualizer: React.FC<MemoryVisualizerProps> = ({
               <div
                 key={block.block_id}
                 style={{ width: `${widthPercent}%` }}
-                className={`h-full flex flex-col justify-center items-center text-xs border-r border-slate-900 px-1 transition-all group relative ${
+                className={`h-full flex flex-col justify-center items-center text-xs border-r border-slate-900 px-1 transition-all duration-500 ease-in-out group relative ${
                   block.is_allocated
                     ? 'bg-sky-900/80 hover:bg-sky-800 text-sky-100 font-medium'
                     : 'bg-slate-950/90 text-slate-500'
