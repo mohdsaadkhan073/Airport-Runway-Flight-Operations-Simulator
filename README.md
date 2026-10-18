@@ -1,26 +1,12 @@
 # Airport Runway & Flight Operations Simulator
 
-An educational simulation web application designed for the **MSBTE K-Scheme Operating System (Course Code: 315319)** curriculum.
-
-The project models airport operations as operating system concepts: runways act as non-shareable hardware resources, flights act as processes transitioning through lifecycle states, and air traffic control functions as the OS CPU and resource scheduler.
+A full-stack web application simulating airport flight requests, takeoff and landing queues, runway availability, scheduling algorithms, memory allocation, and operational analytics.
 
 ---
 
-## 1. Operating System Syllabus Mapping (MSBTE K-Scheme: 315319)
+## 1. System Architecture
 
-| Course Outcome | OS Concept | Airport Simulator Demonstration |
-|---|---|---|
-| **CO1** | Operating System Services & Resource Allocation | Airport Operations Center allocating non-shareable runway resources to inbound and outbound aircraft without collisions. |
-| **CO2** | Process Lifecycle & Queue Management | Flights transitioning through discrete lifecycle states: `SCHEDULED` (New), `WAITING` (Ready Queue), `ON_RUNWAY` (Running/Occupying), and `COMPLETED` (Terminated). |
-| **CO3** | CPU Scheduling Algorithms & Timing Metrics | Interactive laboratory comparing **FCFS (First-Come, First-Served)**, **Non-Preemptive Priority Scheduling**, and **Round Robin (CPU Time Quantum)** with Gantt charts, Average Waiting Time (AWT), and Average Turnaround Time (ATAT). |
-| **CO4** | Contiguous Memory Allocation & Partitioning | 1024 KB memory pool simulator executing **First Fit**, **Best Fit**, and **Worst Fit** partition allocation, hole coalescing, and external fragmentation calculations. |
-| **CO5** | File Management & Audit Trails | Persistent SQLite logging of flight operations, scheduling decisions, and administrative actions, with one-click RFC 4180 CSV export. |
-
----
-
-## 2. System Architecture
-
-The project enforces strict separation of concerns with the backend as the single authoritative source of truth.
+The application enforces a clean separation of concerns with the backend as the single source of truth for all simulation states, schedules, memory states, and operational records.
 
 ```
 Airport-Runway-Simulator/
@@ -33,10 +19,8 @@ Airport-Runway-Simulator/
 │   │   ├── models/           # Database entities (Flight, Runway, Operation, Log, etc.)
 │   │   ├── schemas/          # Pydantic schemas for request validation & serialization
 │   │   ├── services/         # Business logic layer
-│   │   ├── simulation/       # Discrete-event simulation clock & runway engine
-│   │   └── tests/            # Automated Pytest suite
-│   ├── requirements.txt      # Pinned backend dependencies
-│   ├── pytest.ini            # Pytest configuration
+│   │   └── simulation/       # Discrete-event simulation clock & runway engine
+│   ├── requirements.txt      # Backend dependencies
 │   └── .env.example          # Environment variables template
 ├── frontend/
 │   ├── src/
@@ -47,14 +31,27 @@ Airport-Runway-Simulator/
 │   │   ├── App.tsx           # Main application state orchestration
 │   │   └── main.tsx          # React application root
 │   ├── package.json          # Frontend dependencies & scripts
-│   ├── tailwind.config.js    # Tailwind aviation styling
+│   ├── tailwind.config.js    # Tailwind styling configuration
 │   └── .env.example          # Frontend API base URL template
 └── README.md
 ```
 
 ### Technology Stack
-- **Backend**: Python 3.10+, FastAPI, Pydantic v2, SQLAlchemy 2.0, SQLite, Pytest, HTTPX
+- **Backend**: Python 3.10+, FastAPI, Pydantic v2, SQLAlchemy 2.0, SQLite
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Lucide React, Recharts
+
+---
+
+## 2. Core Functional Modules
+
+1. **Airport Operations Overview**: Real-time runway status cards, waiting queue inspector, live simulation clock ticker, and quick controls.
+2. **Flight Management**: Complete flight lifecycle (SCHEDULED, WAITING, ON_RUNWAY, COMPLETED, CANCELLED), search, multi-field filtering, and add/edit modals.
+3. **Runway Control**: Multi-runway allocation, maintenance mode toggling with safety protections preventing disabling occupied runways.
+4. **Scheduling Laboratory**: Benchmarking FCFS, Non-Preemptive Priority Scheduling with emergency overrides, and Round Robin time-slicing with visual Gantt chart timelines.
+5. **Memory Management Simulator**: 1024 KB memory pool with variable partition allocation executing First Fit, Best Fit, and Worst Fit, hole coalescing, and external fragmentation monitoring.
+6. **Flight Logs & Reports**: Persistent SQLite audit trail of all operational events and one-click RFC 4180 CSV export.
+7. **Performance Analytics**: Recharts visual graphs displaying mean waiting times, turnaround latencies, throughput rates, and runway saturation.
+8. **System Settings**: Configurable runway channels, default algorithms, time quantum, and simulation speeds.
 
 ---
 
@@ -63,7 +60,6 @@ Airport-Runway-Simulator/
 ### Prerequisites
 - Python 3.10 or higher
 - Node.js v18+ and npm v9+
-- Git
 
 ---
 
@@ -101,17 +97,13 @@ Airport-Runway-Simulator/
      cp backend/.env.example backend/.env
      ```
 
-5. Start the backend development server (e.g. on port 5000 or 3000):
+5. Start the backend server on your preferred port (e.g. 5000 or 3000):
    ```bash
    cd backend
    uvicorn app.main:app --reload --host 127.0.0.1 --port 5000
    ```
    The backend API will be available at `http://localhost:5000`.
    Interactive Swagger documentation is available at `http://localhost:5000/docs`.
-
-   > [!TIP]
-   > You can run on any port (such as 5000 or 3000) by passing `--port <PORT>`. If you change the port, ensure `VITE_API_BASE_URL` in `frontend/.env` matches (e.g., `http://localhost:5000/api/v1` or `http://localhost:3000/api/v1`).
-
 
 ---
 
@@ -145,66 +137,20 @@ Airport-Runway-Simulator/
 
 ---
 
-### Step 3: Load Sample Data
+### Step 3: Load Sample Workload
 
 In the web interface:
 1. Click the **Sample Data** button in the top navigation bar.
 2. Confirm loading the standard dataset.
-3. The backend will initialize 8 realistic flights (takeoffs, landings, varied durations, priority levels 1-4, and an emergency flight) along with 3 runway configurations (including 1 offline runway for maintenance demonstration).
+3. The backend will initialize 8 realistic flights (takeoffs, landings, varied durations, priority levels 1-4, and an emergency flight) and 3 runway channels.
 
 ---
 
-## 4. Running Automated Tests
-
-The backend includes a comprehensive suite of 33 unit and end-to-end integration tests.
-
-Run all tests from the repository root:
-```powershell
-.\backend\venv\Scripts\pytest backend\app\tests -v
-```
-
-### Test Coverage Highlights
-- `test_flights.py`: Flight validation, unique identifier constraints, invalid state transitions, and deletion guards.
-- `test_scheduling.py`: FCFS order, Non-Preemptive Priority with emergency overrides, Round Robin time slicing, and idle period handling.
-- `test_simulation.py`: Clock advancement, runway occupation, duration decrement, completion, and reset idempotence.
-- `test_memory.py`: First Fit, Best Fit, Worst Fit search algorithms, block coalescing, and out-of-memory handling.
-- `test_logs_reports.py`: Persistent SQLite event auditing and RFC 4180 CSV export.
-- `test_integration.py`: Complete simulation lifecycle from sample data through scheduling, execution, memory allocation, and reset.
-
----
-
-## 5. Production Build Verification
+## 4. Production Build Verification
 
 To verify that the frontend compiles cleanly for production:
 ```powershell
 cd frontend
 npm run build
 ```
-This runs TypeScript checking (`tsc -b`) and Vite production bundle generation into `frontend/dist/`.
-
----
-
-## 6. Diploma Viva & Oral Examination Guide
-
-### Common Questions & Answers
-
-1. **Why is runway simulation non-preemptive while Round Robin is preemptive?**
-   - In physical aviation, once an aircraft enters a runway for landing or takeoff roll, interrupting or aborting the physical channel introduces catastrophic collisions. Therefore, active runway operations are strictly non-preemptive.
-   - Round Robin is implemented in the Scheduling Laboratory as an educational CPU comparison algorithm to demonstrate how time-sharing and quantum slicing behave compared to batch runway scheduling.
-
-2. **How are emergency requests handled?**
-   - Emergency flights (`is_emergency = true` or Priority 1) jump ahead of all waiting non-emergency aircraft in the ready queue. However, they respect active runway operations and safety capacity.
-
-3. **What is External Fragmentation and how does this application calculate it?**
-   - External fragmentation occurs when total free memory exists to satisfy a request, but the memory is divided into disjoint non-contiguous blocks.
-   - The application calculates external fragmentation as:
-     $$\text{External Fragmentation} = \text{Total Free Memory} - \text{Largest Contiguous Free Block}$$
-
-4. **Where does the application store data?**
-   - All state is stored in an SQLite relational database managed via SQLAlchemy. Browser LocalStorage is not used for primary simulation data.
-
----
-
-## 7. License
-
-This project is created for educational and academic assessment purposes for the MSBTE K-Scheme curriculum.
+The output bundle is generated into `frontend/dist/`.

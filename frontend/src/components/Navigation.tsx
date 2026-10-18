@@ -34,7 +34,7 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onTabChange }
     { id: 'memory', label: 'Memory Management', icon: Cpu },
     { id: 'logs', label: 'Flight Logs', icon: FileText },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-    { id: 'about', label: 'Syllabus & About', icon: HelpCircle },
+    { id: 'about', label: 'System & Settings', icon: HelpCircle },
   ] as const;
 
   return (

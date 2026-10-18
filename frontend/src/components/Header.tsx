@@ -37,12 +37,9 @@ export const Header: React.FC<HeaderProps> = ({
               <h1 className="text-lg font-bold text-slate-100 tracking-tight">
                 Airport Runway & Flight Operations Simulator
               </h1>
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800">
-                MSBTE 315319
-              </span>
             </div>
             <p className="text-xs text-slate-400">
-              Process Scheduling & Resource Management Laboratory
+              Flight Scheduling & Runway Resource Management System
             </p>
           </div>
         </div>

@@ -194,7 +194,7 @@ export const App: React.FC = () => {
       </main>
 
       <footer className="border-t border-slate-900 bg-slate-950/80 py-4 px-4 text-center text-xs text-slate-500">
-        Airport Runway & Flight Operations Simulator • MSBTE K-Scheme Operating Systems (315319) • Full Stack Simulation
+        Airport Runway & Flight Operations Simulator • Full-Stack Operations & Scheduling Dashboard
       </footer>
 
       <ConfirmModal

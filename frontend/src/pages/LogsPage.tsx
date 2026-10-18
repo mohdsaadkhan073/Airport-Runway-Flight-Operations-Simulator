@@ -69,7 +69,7 @@ export const LogsPage: React.FC<LogsPageProps> = ({ onShowToast }) => {
         <div>
           <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
             <FileText className="w-5 h-5 text-sky-400" />
-            Flight Logs & Persistent Records (CO5)
+            Flight Logs & Persistent Records
           </h2>
           <p className="text-xs text-slate-400 mt-1">
             Audit trail of operations, state transitions, scheduling decisions, and standard CSV report exports.

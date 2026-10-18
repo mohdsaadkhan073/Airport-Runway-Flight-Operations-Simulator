@@ -74,7 +74,7 @@ export const MemoryPage: React.FC<MemoryPageProps> = ({ onShowToast }) => {
         <div>
           <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
             <Cpu className="w-5 h-5 text-sky-400" />
-            Contiguous Memory Allocation Simulator (CO4)
+            Contiguous Memory Allocation Simulator
           </h2>
           <p className="text-xs text-slate-400 mt-1">
             Simulate variable-partition dynamic storage allocation with First Fit, Best Fit, Worst Fit, and external fragmentation.
@@ -141,7 +141,7 @@ export const MemoryPage: React.FC<MemoryPageProps> = ({ onShowToast }) => {
           </form>
 
           <div className="pt-4 border-t border-slate-800 text-[11px] text-slate-400 space-y-2 leading-relaxed">
-            <span className="font-semibold text-slate-200 block">Syllabus Insights (CO4):</span>
+            <span className="font-semibold text-slate-200 block">Strategy Overview:</span>
             <p>
               <strong>First Fit:</strong> Allocates the first hole that is big enough. Searches from beginning.
             </p>

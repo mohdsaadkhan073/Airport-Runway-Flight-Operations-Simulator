@@ -35,10 +35,10 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
         <div>
           <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
             <Activity className="w-5 h-5 text-sky-400" />
-            Airport Operations & OS Resource Dispatcher
+            Airport Operations & Runway Dispatch Center
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Simulating CPU process management, multi-queue scheduling, and non-preemptive runway allocation.
+            Real-time flight queue scheduling, multi-runway allocation, and operations monitoring.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -264,37 +264,37 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
             <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2 mb-3">
               <BookOpen className="w-4 h-4 text-sky-400" />
-              MSBTE K-Scheme Syllabus Mapping
+              Airport Dispatch Rules & Guide
             </h3>
             <div className="space-y-3 text-xs text-slate-300 leading-relaxed">
               <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                <span className="font-bold text-sky-300">CO1: OS Resource Dispatching</span>
+                <span className="font-bold text-sky-300">Runway Safety & Channel Locks</span>
                 <p className="text-slate-400 mt-0.5">
-                  Runways serve as non-preemptive shared hardware resources arbitrated by the simulation kernel.
+                  Physical runways operate non-preemptively. Once an aircraft begins landing or takeoff roll, the runway channel remains locked until the operation concludes.
                 </p>
               </div>
               <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                <span className="font-bold text-amber-300">CO2: Process Lifecycle States</span>
+                <span className="font-bold text-amber-300">Queue Lifecycle States</span>
                 <p className="text-slate-400 mt-0.5">
-                  Flights model processes traversing SCHEDULED (New), WAITING (Ready), ON_RUNWAY (Running), and COMPLETED (Terminated).
+                  Flights progress sequentially through SCHEDULED, WAITING queue, ON_RUNWAY, and COMPLETED states based on arrival times and runway availability.
                 </p>
               </div>
               <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                <span className="font-bold text-emerald-300">CO3: CPU Scheduling Algorithms</span>
+                <span className="font-bold text-emerald-300">Priority & Emergency Overrides</span>
                 <p className="text-slate-400 mt-0.5">
-                  Comparison laboratory calculates exact FCFS, Non-Preemptive Priority, and Round Robin time-slice metrics.
+                  Emergency aircraft bypass waiting queues immediately upon arrival, securing the next available runway without interrupting ongoing operations.
                 </p>
               </div>
               <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                <span className="font-bold text-purple-300">CO4: Contiguous Memory Allocation</span>
+                <span className="font-bold text-purple-300">Resource Monitoring</span>
                 <p className="text-slate-400 mt-0.5">
-                  Dynamic variable partitions demonstrate First Fit, Best Fit, Worst Fit, and external fragmentation.
+                  All timings, turnaround statistics, runway saturations, and memory allocations are computed live by the backend engine.
                 </p>
               </div>
               <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                <span className="font-bold text-rose-300">CO5: Persistent Logs & Reports</span>
+                <span className="font-bold text-rose-300">Persistent Operation Logging</span>
                 <p className="text-slate-400 mt-0.5">
-                  Operations and event transitions are persisted into SQLite and exported as RFC 4180 CSV reports.
+                  Every state transition and runway release event is recorded in the persistent SQLite database and exportable as CSV reports.
                 </p>
               </div>
             </div>

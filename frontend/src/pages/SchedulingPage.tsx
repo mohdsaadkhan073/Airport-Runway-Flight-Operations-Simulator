@@ -66,10 +66,10 @@ export const SchedulingPage: React.FC<SchedulingPageProps> = ({ onShowToast }) =
         <div>
           <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
             <Clock className="w-5 h-5 text-sky-400" />
-            Scheduling Laboratory (CO3)
+            Scheduling Laboratory
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Simulate and benchmark FCFS, Priority Scheduling, and Round Robin CPU analogies with real workload calculations.
+            Simulate and benchmark FCFS, Priority Scheduling, and Round Robin algorithms with real workload calculations.
           </p>
         </div>
       </div>
@@ -253,7 +253,7 @@ export const SchedulingPage: React.FC<SchedulingPageProps> = ({ onShowToast }) =
       <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-sm space-y-3">
         <h4 className="text-sm font-bold text-slate-100 flex items-center gap-2">
           <Info className="w-4 h-4 text-sky-400" />
-          Operating Systems Viva Concept Notes (MSBTE 315319)
+          Algorithm Characteristics & Performance Factors
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
           <div className="p-3 bg-slate-950/60 border border-slate-800 rounded-lg space-y-1">
