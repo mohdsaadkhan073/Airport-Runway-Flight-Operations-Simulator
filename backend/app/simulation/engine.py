@@ -33,11 +33,38 @@ def get_simulation_state(db: Session) -> Dict[str, Any]:
     if not runways:
         runways = init_default_runways(db, settings.runway_count)
 
-    waiting_flights = db.query(Flight).filter(Flight.status == FlightStatus.WAITING).order_by(
-        Flight.is_emergency.desc(),
-        Flight.priority.asc(),
-        Flight.arrival_time.asc()
-    ).all()
+    algo = settings.default_algorithm.upper()
+    waiting_raw = db.query(Flight).filter(Flight.status == FlightStatus.WAITING).all()
+    if algo in ["PRIORITY", "PRIORITY SCHEDULING"]:
+        waiting_flights = sorted(
+            waiting_raw,
+            key=lambda f: (
+                0 if f.is_emergency else 1,
+                f.priority,
+                f.arrival_time,
+                f.id
+            )
+        )
+    elif algo in ["SJF", "SHORTEST JOB FIRST"]:
+        waiting_flights = sorted(
+            waiting_raw,
+            key=lambda f: (
+                0 if f.is_emergency else 1,
+                f.duration,
+                f.arrival_time,
+                f.id
+            )
+        )
+    else:
+        waiting_flights = sorted(
+            waiting_raw,
+            key=lambda f: (
+                0 if f.is_emergency else 1,
+                f.arrival_time,
+                f.priority,
+                f.id
+            )
+        )
 
     active_flights = db.query(Flight).filter(Flight.status == FlightStatus.ON_RUNWAY).all()
     scheduled_flights = db.query(Flight).filter(Flight.status == FlightStatus.SCHEDULED).all()

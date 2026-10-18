@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Play, BarChart2, Layers, Info, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { Clock, Play, BarChart2, Layers, Info, CheckCircle2 } from 'lucide-react';
 import {
   SchedulingResult,
   SchedulingComparisonResponse,
@@ -71,13 +71,6 @@ export const SchedulingPage: React.FC<SchedulingPageProps> = ({ onShowToast }) =
         </div>
       </div>
 
-      <div className="bg-amber-950/30 border border-amber-800/50 rounded-xl p-4 flex items-start gap-3">
-        <ShieldAlert className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-        <div className="text-xs text-slate-300 leading-relaxed">
-          <strong className="text-amber-300 block font-semibold mb-0.5">Physical Safety Protocol: Preemption Prohibited</strong>
-          Once an aircraft begins touchdown or takeoff roll on a runway, preemption is strictly prohibited by aerodynamic safety. All scheduling algorithms operate non-preemptively until the active flight completes its operation and vacates the runway.
-        </div>
-      </div>
 
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">

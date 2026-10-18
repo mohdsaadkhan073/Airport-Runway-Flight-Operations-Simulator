@@ -106,14 +106,14 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-1.5 bg-slate-950/80 border border-slate-800 px-2 py-1.5 rounded-lg text-xs text-slate-400">
             <span>Speed:</span>
             <select
-              value={speed}
+              value={String(Number(speed))}
               onChange={(e) => onSpeedChange(parseFloat(e.target.value))}
-              className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded px-1.5 py-0.5 outline-none focus:border-sky-500"
+              className="bg-slate-900 border border-slate-700 text-slate-200 text-xs rounded px-1.5 py-0.5 outline-none focus:border-sky-500 cursor-pointer"
             >
               <option value="0.5">0.5x</option>
-              <option value="1.0">1.0x</option>
-              <option value="2.0">2.0x</option>
-              <option value="5.0">5.0x</option>
+              <option value="1">1.0x</option>
+              <option value="2">2.0x</option>
+              <option value="5">5.0x</option>
             </select>
           </div>
 

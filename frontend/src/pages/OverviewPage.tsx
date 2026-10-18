@@ -202,7 +202,12 @@ export const OverviewPage: React.FC<OverviewPageProps> = ({
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-amber-400" />
-                <h3 className="text-sm font-semibold text-slate-100">Ready Waiting Queue (Memory / Runway Buffer)</h3>
+                <h3 className="text-sm font-semibold text-slate-100 flex items-center gap-2">
+                  Ready Waiting Queue
+                  <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800">
+                    Policy: {simulationState?.default_algorithm || 'FCFS'}
+                  </span>
+                </h3>
               </div>
               <span className="text-xs text-slate-400 font-mono">
                 {waitingQueue.length} flights waiting
